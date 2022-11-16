@@ -1,5 +1,6 @@
 package com.github.kr328.clash.service
 
+import android.annotation.TargetApi
 import android.app.PendingIntent
 import android.content.Intent
 import android.net.ProxyInfo
@@ -40,6 +41,7 @@ class TunService : VpnService(), CoroutineScope by CoroutineScope(Dispatchers.De
             install(StaticNotificationModule(self))
 
         install(AppListCacheModule(self))
+        install(TimeZoneModule(self))
         install(SuspendModule(self))
 
         try {
@@ -60,12 +62,10 @@ class TunService : VpnService(), CoroutineScope by CoroutineScope(Dispatchers.De
 
                         true
                     }
-                    network.onEvent { e ->
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                            setUnderlyingNetworks(e.network?.let { arrayOf(it) })
+                    network.onEvent { n ->
+                        if (Build.VERSION.SDK_INT in 22..28) @TargetApi(22) {
+                            setUnderlyingNetworks(n?.let { arrayOf(it) })
                         }
-
-                        config.reload()
 
                         false
                     }
@@ -183,49 +183,32 @@ class TunService : VpnService(), CoroutineScope by CoroutineScope(Dispatchers.De
             )
 
             // Metered
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (Build.VERSION.SDK_INT >= 29) {
                 setMetered(false)
             }
 
             // System Proxy
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && store.systemProxy) {
+            if (Build.VERSION.SDK_INT >= 29 && store.systemProxy) {
                 listenHttp()?.let {
                     setHttpProxy(
                         ProxyInfo.buildDirectProxy(
                             it.address.hostAddress,
                             it.port,
-                            if (store.bypassPrivateNetwork)
-                                listOf(
-                                    "localhost",
-                                    "*.local",
-                                    "127.*",
-                                    "10.*",
-                                    "172.16.*",
-                                    "172.17.*",
-                                    "172.18.*",
-                                    "172.19.*",
-                                    "172.2*",
-                                    "172.30.*",
-                                    "172.31.*",
-                                    "192.168.*"
-                                )
-                            else
-                                emptyList()
+                            HTTP_PROXY_BLACK_LIST + if (store.bypassPrivateNetwork) HTTP_PROXY_LOCAL_LIST else emptyList()
                         )
                     )
                 }
             }
 
-            val blocking = mutableListOf("$TUN_GATEWAY/$TUN_SUBNET_PREFIX")
-            if (store.blockLoopback) {
-                blocking.add(NET_SUBNET_LOOPBACK)
+            if (store.allowBypass) {
+                allowBypass()
             }
 
             TunModule.TunDevice(
                 fd = establish()?.detachFd()
                     ?: throw NullPointerException("Establish VPN rejected by system"),
-                mtu = TUN_MTU,
-                blocking = blocking.joinToString(";"),
+                gateway = "$TUN_GATEWAY/$TUN_SUBNET_PREFIX",
+                portal = TUN_PORTAL,
                 dns = if (store.dnsHijacking) NET_ANY else TUN_DNS,
             )
         }
@@ -237,8 +220,29 @@ class TunService : VpnService(), CoroutineScope by CoroutineScope(Dispatchers.De
         private const val TUN_MTU = 9000
         private const val TUN_SUBNET_PREFIX = 30
         private const val TUN_GATEWAY = "172.19.0.1"
-        private const val TUN_DNS = "172.19.0.2"
+        private const val TUN_PORTAL = "172.19.0.2"
+        private const val TUN_DNS = TUN_PORTAL
         private const val NET_ANY = "0.0.0.0"
-        private const val NET_SUBNET_LOOPBACK = "127.0.0.0/8"
+
+        private val HTTP_PROXY_LOCAL_LIST: List<String> = listOf(
+            "localhost",
+            "*.local",
+            "127.*",
+            "10.*",
+            "172.16.*",
+            "172.17.*",
+            "172.18.*",
+            "172.19.*",
+            "172.2*",
+            "172.30.*",
+            "172.31.*",
+            "192.168.*"
+        )
+        private val HTTP_PROXY_BLACK_LIST: List<String> = listOf(
+            "*zhihu.com",
+            "*zhimg.com",
+            "*jd.com",
+            "100ime-iat-api.xfyun.cn",
+        )
     }
 }

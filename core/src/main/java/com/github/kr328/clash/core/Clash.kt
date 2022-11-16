@@ -52,6 +52,10 @@ object Clash {
         Bridge.nativeNotifyDnsChanged(dns.joinToString(separator = ","))
     }
 
+    fun notifyTimeZoneChanged(name: String, offset: Int) {
+        Bridge.nativeNotifyTimeZoneChanged(name, offset)
+    }
+
     fun notifyInstalledAppsChanged(uids: List<Pair<Int, String>>) {
         val uidList = uids.joinToString(separator = ",") { "${it.first}:${it.second}" }
 
@@ -60,13 +64,13 @@ object Clash {
 
     fun startTun(
         fd: Int,
-        mtu: Int,
+        gateway: String,
+        portal: String,
         dns: String,
-        blocking: String,
         markSocket: (Int) -> Boolean,
         querySocketUid: (protocol: Int, source: InetSocketAddress, target: InetSocketAddress) -> Int
     ) {
-        Bridge.nativeStartTun(fd, mtu, dns, blocking, object : TunInterface {
+        Bridge.nativeStartTun(fd, gateway, portal, dns, object : TunInterface {
             override fun markSocket(fd: Int) {
                 markSocket(fd)
             }

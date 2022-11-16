@@ -74,6 +74,7 @@
     <string name="exit_without_save">Exit without Save</string>
     <string name="exit_without_save_warning">All changed will *LOST*</string>
 
+    <string name="raw_cn" translatable="false">cn</string>
     <string name="disabled">Disabled</string>
     <string name="unavailable">Unavailable</string>
     <string name="empty_name">Empty Name</string>
@@ -121,6 +122,8 @@
     <string name="dns_hijacking_summary">Handle all dns packet</string>
     <string name="block_loopback">Block Loopback</string>
     <string name="block_loopback_summary">Block loopback connections</string>
+    <string name="allow_bypass">Allow Bypass</string>
+    <string name="allow_bypass_summary">Allows all apps to bypass this VPN connection</string>
     <string name="system_proxy">System Proxy</string>
     <string name="system_proxy_summary">Attach http proxy to VpnService</string>
     <string name="access_control_mode">Access Control Mode</string>
@@ -142,6 +145,7 @@
     <string name="bind_address">Bind Address</string>
     <string name="mode">Mode</string>
     <string name="log_level">Log Level</string>
+    <string name="sniff_tls_sni">Sniff TLS SNI</string>
     <string name="ipv6">IPv6</string>
     <string name="hosts">Hosts</string>
     <string name="sideload_geoip">Sideload GEOIP</string>
@@ -159,6 +163,7 @@
     <string name="default_name_server">Default Name Server</string>
     <string name="fakeip_filter">Fake-IP Filter</string>
     <string name="geoip_fallback">GeoIP Fallback</string>
+    <string name="geoip_fallback_code">GeoIP Fallback Code</string>
     <string name="ipcidr_fallback">IPCIDR Fallback</string>
     <string name="domain_fallback">Domain Fallback</string>
     <string name="name_server_policy">Name Server Policy</string>

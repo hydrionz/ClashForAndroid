@@ -35,6 +35,7 @@ class ClashService : BaseService() {
             install(StaticNotificationModule(self))
 
         install(AppListCacheModule(self))
+        install(TimeZoneModule(self))
         install(SuspendModule(self))
 
         try {
@@ -54,8 +55,6 @@ class ClashService : BaseService() {
                         true
                     }
                     network.onEvent {
-                        config.reload()
-
                         false
                     }
                 }
